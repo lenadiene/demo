@@ -1,0 +1,13 @@
+observer\SorteioObservable.class
+com\example\observer\ApostadorObserver.class
+com\example\Main.class
+strategy\PremioDezena.class
+com\example\model\Aposta.class
+strategy\PremioGrupo.class
+strategy\CalculoPremio.class
+com\example\model\Animal.class
+view\JogoDoBichoGUI.class
+strategy\PremioMilhar.class
+com\example\model\Sorteio.class
+com\example\model\Resultado.class
+com\example\controller\ApostaController.class
