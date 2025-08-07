@@ -7,12 +7,28 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import com.example.controller.ApostaController;
 import com.example.model.Aposta;
@@ -63,27 +79,32 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
         carregarImagens();
         initUI();
     }
-
+    private String normalizarNomeAnimal(String nome) {
+        if (nome == null) return null;
+        String semAcento = Normalizer.normalize(nome, Normalizer.Form.NFD)
+            .replaceAll("[^\\p{ASCII}]", "");
+        return capitalize(semAcento.toLowerCase());
+    }
     private void carregarImagens() {
-        animaisImagens = new HashMap<>();
-        String[] nomesAnimais = {
-                "avestruz", "aguia", "burro", "borboleta", "cachorro",
-                "cabra", "carneiro", "camelo", "cobra", "coelho",
-                "cavalo", "elefante", "galo", "gato", "jacare",
-                "leao", "macaco", "porco", "pavao", "peru",
-                "touro", "tigre", "urso", "veado", "vaca"
-        };
+    animaisImagens = new HashMap<>();
+    String[] nomesAnimais = {
+            "avestruz", "aguia", "burro", "borboleta", "cachorro",
+            "cabra", "carneiro", "camelo", "cobra", "coelho",
+            "cavalo", "elefante", "galo", "gato", "jacare",
+            "leao", "macaco", "porco", "pavao", "peru",
+            "touro", "tigre", "urso", "veado", "vaca"
+    };
 
-        for (String nome : nomesAnimais) {
-            try {
-                ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + nome + ".jpg"));
-                animaisImagens.put(capitalize(nome), icon);
-            } catch (Exception e) {
-                System.err.println("Imagem não encontrada: " + nome);
-                animaisImagens.put(capitalize(nome), criarIconePlaceholder(capitalize(nome)));
-            }
+    for (String nome : nomesAnimais) {
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + nome + ".jpg"));
+            animaisImagens.put(normalizarNomeAnimal(nome), icon); // <-- normalizado
+        } catch (Exception e) {
+            System.err.println("Imagem não encontrada: " + nome);
+            animaisImagens.put(normalizarNomeAnimal(nome), criarIconePlaceholder(capitalize(nome)));
         }
     }
+}
 
     private String capitalize(String str) {
         if (str == null || str.isEmpty()) return str;
@@ -154,11 +175,40 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
         JComboBox<String> tipoCombo = new JComboBox<>(tipos);
         tipoPanel.add(tipoCombo);
 
+        JPanel cpfPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        cpfPanel.setBackground(Color.WHITE);
+        cpfPanel.add(new JLabel("CPF do Apostador:"));
+        JTextField cpfField = new JTextField(14);
+        cpfPanel.add(cpfField);
+
+        // Crie os componentes
+        JComboBox<String> animalCombo = new JComboBox<>(mapaAnimalParaGrupo.keySet().stream().map(this::capitalize).toArray(String[]::new));
+        JTextField dezenaField = new JTextField(4);
+        JTextField milharField = new JTextField(5);
+
+        // Painel para o campo dinâmico
         JPanel numeroPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         numeroPanel.setBackground(Color.WHITE);
         numeroPanel.add(new JLabel("Número/Animal:"));
-        JTextField numeroField = new JTextField(10);
-        numeroPanel.add(numeroField);
+        numeroPanel.add(animalCombo); // Começa com animalCombo
+
+        // Listener para trocar o campo conforme o tipo
+        tipoCombo.addActionListener(e -> {
+            numeroPanel.removeAll();
+            numeroPanel.add(new JLabel("Número/Animal:"));
+            String tipo = (String) tipoCombo.getSelectedItem();
+            if ("Grupo".equalsIgnoreCase(tipo)) {
+                numeroPanel.add(animalCombo);
+            } else if ("Dezena".equalsIgnoreCase(tipo)) {
+                dezenaField.setText("");
+                numeroPanel.add(dezenaField);
+            } else if ("Milhar".equalsIgnoreCase(tipo)) {
+                milharField.setText("");
+                numeroPanel.add(milharField);
+            }
+            numeroPanel.revalidate();
+            numeroPanel.repaint();
+        });
 
         JPanel valorPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         valorPanel.setBackground(Color.WHITE);
@@ -181,6 +231,7 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
         controlPanel.add(tipoPanel);
         controlPanel.add(numeroPanel);
         controlPanel.add(valorPanel);
+        controlPanel.add(cpfPanel);
         controlPanel.add(buttonPanel);
 
         listaApostasModel = new DefaultListModel<>();
@@ -191,8 +242,20 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
         apostarButton.addActionListener(e -> {
             try {
                 String tipo = (String) tipoCombo.getSelectedItem();
-                String numero = numeroField.getText().trim();
+                String numero;
+                if ("Grupo".equalsIgnoreCase(tipo)) {
+                    numero = animalCombo.getSelectedItem().toString().toLowerCase();
+                } else if ("Dezena".equalsIgnoreCase(tipo)) {
+                    numero = dezenaField.getText().trim();
+                    int dezena = Integer.parseInt(numero);
+                    if (dezena < 0 || dezena > 99) throw new NumberFormatException();
+                } else {
+                    numero = milharField.getText().trim();
+                    int milhar = Integer.parseInt(numero);
+                    if (milhar < 0 || milhar > 9999) throw new NumberFormatException();
+                }
                 String valorStr = valorField.getText().trim();
+                String cpf = cpfField.getText().trim();
 
                 if (numero.isEmpty() || valorStr.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "Preencha todos os campos obrigatórios.", "Atenção", JOptionPane.WARNING_MESSAGE);
@@ -200,16 +263,16 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
                 }
 
                 double valor = Double.parseDouble(valorStr);
-                Aposta aposta = apostaController.criarAposta(tipo, numero, valor);
+                Aposta aposta = apostaController.criarAposta(tipo, numero, valor,cpf);
                 apostas.add(aposta);
                 listaApostasModel.addElement(aposta.toString());
 
-                String nomeAnimal = capitalize(numero.toLowerCase());
-                ImageIcon imagem = animaisImagens.getOrDefault(nomeAnimal, criarIconePlaceholder(nomeAnimal));
-                imagemApostaLabel.setIcon(imagem);
+                    String nomeAnimal = normalizarNomeAnimal(numero);
+        ImageIcon imagem = animaisImagens.getOrDefault(nomeAnimal, criarIconePlaceholder(nomeAnimal));
+        imagemApostaLabel.setIcon(imagem);
 
             } catch (NumberFormatException nfe) {
-                JOptionPane.showMessageDialog(this, "Digite um valor numérico válido.", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Digite um número válido para o tipo selecionado.", "Erro", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
@@ -227,28 +290,55 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
         return painelPrincipal;
     }
 
+    private JPanel criarPainelGrupos() {
+        JPanel painel = new JPanel(new BorderLayout());
+        painel.setBackground(Color.WHITE);
+
+        String[] colunas = {"Grupo", "Animal", "Dezenas"};
+        String[][] dados = new String[25][3];
+
+        String[] nomes = {
+            "Avestruz", "Águia", "Burro", "Borboleta", "Cachorro",
+            "Cabra", "Carneiro", "Camelo", "Cobra", "Coelho",
+            "Cavalo", "Elefante", "Galo", "Gato", "Jacaré",
+            "Leão", "Macaco", "Porco", "Pavão", "Peru",
+            "Touro", "Tigre", "Urso", "Veado", "Vaca"
+        };
+
+        for (int i = 0; i < 25; i++) {
+            int dezenaInicial = i * 4 + 1;
+            int dezenaFinal = dezenaInicial + 3;
+            String dezenas = String.format("%02d a %02d", dezenaInicial, dezenaFinal);
+            dados[i][0] = String.valueOf(i + 1);
+            dados[i][1] = nomes[i];
+            dados[i][2] = dezenas;
+        }
+
+        javax.swing.JTable tabela = new javax.swing.JTable(dados, colunas);
+        tabela.setEnabled(false);
+        tabela.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        tabela.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
+        tabela.setRowHeight(22);
+
+        JScrollPane scroll = new JScrollPane(tabela);
+        painel.add(scroll, BorderLayout.CENTER);
+
+        return painel;
+    }
+
     private void initUI() {
         JTabbedPane abas = new JTabbedPane();
         abas.addTab("Fazer Aposta", criarPainelAposta());
         abas.addTab("Realizar Sorteio", criarPainelSorteio());
+        abas.addTab("Grupos e Dezenas", criarPainelGrupos()); // <-- nova aba
         add(abas, BorderLayout.CENTER);
     }
 
     @Override
     public void update(Resultado resultado) {
-        String mensagem = String.format(
-                "<html><center>Resultado:<br>Milhar: %s<br>Dezena: %s<br>Animal: %s<br>Prêmio: R$%.2f</center></html>",
-                resultado.getMilharFormatado(),
-                resultado.getDezenaFormatada(),
-                resultado.getAnimal(),
-                resultado.getPremioPrincipal()
-        );
-        resultadoLabel.setText(mensagem);
-        resultadoLabel.setIcon(null);
-        imagemResultadoLabel.setIcon(animaisImagens.get(resultado.getAnimal()));
-
         StringBuilder vencedores = new StringBuilder();
         boolean houveVencedor = false;
+        double totalPremios = 0.0;
 
         for (Aposta aposta : apostas) {
             String tipo = aposta.getTipoAposta();
@@ -260,21 +350,17 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
                     case "milhar":
                         venceu = Integer.parseInt(valorApostado) == resultado.getMilhar();
                         break;
-
                     case "dezena":
                         venceu = Integer.parseInt(valorApostado) == resultado.getDezena();
                         break;
-
                     case "grupo":
                         int grupoResultado = (resultado.getDezena() == 100) ? 25 : ((resultado.getDezena() - 1) / 4 + 1);
                         Integer grupoAposta = null;
-
                         try {
                             grupoAposta = Integer.parseInt(valorApostado);
                         } catch (NumberFormatException e) {
                             grupoAposta = mapaAnimalParaGrupo.get(valorApostado);
                         }
-
                         venceu = grupoAposta != null && grupoAposta == grupoResultado;
                         break;
                 }
@@ -285,8 +371,20 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
             if (venceu) {
                 houveVencedor = true;
                 vencedores.append(aposta.toString()).append("\n");
+                totalPremios += aposta.calcularPremio();
             }
         }
+
+        String mensagem = String.format(
+            "<html><center>Resultado:<br>Milhar: %s<br>Dezena: %s<br>Animal: %s<br>Prêmio: R$%.2f</center></html>",
+            resultado.getMilharFormatado(),
+            resultado.getDezenaFormatada(),
+            resultado.getAnimal(),
+            totalPremios
+        );
+        resultadoLabel.setText(mensagem);
+        resultadoLabel.setIcon(null);
+        imagemResultadoLabel.setIcon(animaisImagens.get(normalizarNomeAnimal(resultado.getAnimal())));
 
         if (houveVencedor) {
             JOptionPane.showMessageDialog(this, "Parabéns! Uma das apostas foi vencedora!", "Resultado", JOptionPane.INFORMATION_MESSAGE);
@@ -295,7 +393,11 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
         }
 
         if (vencedoresTextArea != null) {
-            vencedoresTextArea.setText(houveVencedor ? vencedores.toString() : "Nenhuma aposta vencedora.");
+            String texto = houveVencedor ? vencedores.toString() : "Nenhuma aposta vencedora.";
+            if (houveVencedor) {
+                texto += "\nTOTAL DE PRÊMIOS PAGOS: R$" + String.format("%.2f", totalPremios);
+            }
+            vencedoresTextArea.setText(texto);
         }
     }
 

@@ -4,7 +4,7 @@ import com.example.strategy.PremioDezena;
 import com.example.strategy.PremioGrupo;
 import com.example.strategy.PremioMilhar;
 public class ApostaFactory {
-    public static Aposta criarAposta(String tipo, String numeroAposta, double valor) {
+    public static Aposta criarAposta(String tipo, String numeroAposta, double valor, String cpfApostador) {
         CalculoPremio estrategia = null;
         
         switch(tipo.toLowerCase()) {
@@ -21,6 +21,6 @@ public class ApostaFactory {
                 throw new IllegalArgumentException("Tipo de aposta inválido");
         }
         
-        return new Aposta(numeroAposta, valor, estrategia, tipo);
+        return new Aposta(numeroAposta, valor, estrategia, tipo, cpfApostador);
     }
 }

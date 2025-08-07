@@ -8,12 +8,13 @@ public class Aposta {
     private double valor;
     private CalculoPremio estrategiaPremio;
     private String tipoAposta;
-
-    public Aposta(String numeroAposta, double valor, CalculoPremio estrategiaPremio, String tipoAposta) {
+private String cpfApostador;
+    public Aposta(String numeroAposta, double valor, CalculoPremio estrategiaPremio, String tipoAposta, String cpfApostador) {
         this.numeroAposta = numeroAposta;
         this.valor = valor;
         this.estrategiaPremio = estrategiaPremio;
         this.tipoAposta = tipoAposta;
+        this.cpfApostador = cpfApostador;
     }
 
     public double calcularPremio() {
@@ -32,10 +33,17 @@ public class Aposta {
     public String getTipoAposta() {
         return tipoAposta;
     }
+    public String getCpfApostador() {
+    return cpfApostador;
+}
 
-    @Override
+        @Override
     public String toString() {
-        return String.format("Aposta: %s | Tipo: %s | Valor: R$%.2f | Premio Possivel: R$%.2f",
-                numeroAposta, tipoAposta, valor, calcularPremio());
+        double premio = estrategiaPremio.calcularPremio(valor);
+        return "CPF: " + cpfApostador +
+               " | Tipo: " + tipoAposta +
+               " | Número: " + numeroAposta +
+               " | Valor: R$" + valor +
+               " | Prêmio: R$" + String.format("%.2f", premio);
     }
 }

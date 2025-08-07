@@ -10,8 +10,8 @@ public class ApostaController {
         this.sorteioObservable = sorteioObservable;
     }
     
-    public Aposta criarAposta(String tipo, String numero, double valor) {
-        return ApostaFactory.criarAposta(tipo, numero, valor);
+    public Aposta criarAposta(String tipo, String numero, double valor, String cpf) {
+        return ApostaFactory.criarAposta(tipo, numero, valor, cpf);
     }
     
     public void realizarSorteio() {
