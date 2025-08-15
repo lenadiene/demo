@@ -8,35 +8,38 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AnimalRepository {
-    private final Map<String, ImageIcon> imagens = new HashMap<>();
-    private final Map<String, Integer> mapaAnimalParaGrupo = new HashMap<>();
+
+    private final String[] nomesAnimais = {
+            "Avestruz", "Águia", "Burro", "Borboleta", "Cachorro",
+            "Cabra", "Carneiro", "Camelo", "Cobra", "Coelho",
+            "Cavalo", "Elefante", "Galo", "Gato", "Jacaré",
+            "Leão", "Macaco", "Porco", "Pavão", "Peru",
+            "Touro", "Tigre", "Urso", "Veado", "Vaca"
+    };
+
+    private final Map<String, Integer> animalParaGrupo = new HashMap<>();
+    private final Map<String, ImageIcon> imagensAnimais = new HashMap<>();
 
     public AnimalRepository() {
-        inicializarAnimais();
-        carregarImagens();
-    }
-
-    private void inicializarAnimais() {
-        String[] nomes = {
-                "Avestruz", "Águia", "Burro", "Borboleta", "Cachorro",
-                "Cabra", "Carneiro", "Camelo", "Cobra", "Coelho",
-                "Cavalo", "Elefante", "Galo", "Gato", "Jacaré",
-                "Leão", "Macaco", "Porco", "Pavão", "Peru",
-                "Touro", "Tigre", "Urso", "Veado", "Vaca"
-        };
-        for (int i = 0; i < nomes.length; i++) {
-            mapaAnimalParaGrupo.put(normalizarNome(nomes[i]), i + 1);
+        for (int i = 0; i < nomesAnimais.length; i++) {
+            String nome = normalizarNome(nomesAnimais[i]);
+            animalParaGrupo.put(nome, i + 1);
+            imagensAnimais.put(nome, carregarImagem(nome));
         }
     }
 
-    private void carregarImagens() {
-        for (String nome : mapaAnimalParaGrupo.keySet()) {
-            try {
-                ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + nome.toLowerCase() + ".jpg"));
-                imagens.put(nome, icon);
-            } catch (Exception e) {
-                imagens.put(nome, criarIconePlaceholder(nome));
-            }
+    private String normalizarNome(String nome) {
+        if (nome == null) return null;
+        String semAcento = Normalizer.normalize(nome, Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "");
+        return semAcento.toLowerCase();
+    }
+
+    private ImageIcon carregarImagem(String nomeNormalizado) {
+        try {
+            return new ImageIcon(getClass().getResource("/images/" + nomeNormalizado + ".jpg"));
+        } catch (Exception e) {
+            return criarIconePlaceholder(capitalize(nomeNormalizado));
         }
     }
 
@@ -51,27 +54,34 @@ public class AnimalRepository {
         return new ImageIcon(image);
     }
 
-    public String normalizarNome(String nome) {
-        if (nome == null) return null;
-        String semAcento = Normalizer.normalize(nome, Normalizer.Form.NFD)
-                .replaceAll("[^\\p{ASCII}]", "");
-        return capitalize(semAcento.toLowerCase());
-    }
-
     private String capitalize(String str) {
         if (str == null || str.isEmpty()) return str;
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    public Integer getGrupo(String nomeAnimal) {
-        return mapaAnimalParaGrupo.get(normalizarNome(nomeAnimal));
-    }
-
-    public ImageIcon getImagem(String nomeAnimal) {
-        return imagens.getOrDefault(normalizarNome(nomeAnimal), criarIconePlaceholder(nomeAnimal));
-    }
-
+    // Retorna todos os nomes normalizados para o combo
     public String[] getTodosAnimais() {
-        return mapaAnimalParaGrupo.keySet().stream().map(this::capitalize).toArray(String[]::new);
+        String[] todos = new String[nomesAnimais.length];
+        for (int i = 0; i < nomesAnimais.length; i++) {
+            todos[i] = capitalize(normalizarNome(nomesAnimais[i]));
+        }
+        return todos;
+    }
+
+    // Retorna grupo a partir do nome do animal
+    public Integer getGrupo(String nomeAnimal) {
+        return animalParaGrupo.get(normalizarNome(nomeAnimal));
+    }
+
+    // Retorna imagem do animal
+    public ImageIcon getImagem(String nomeAnimal) {
+        return imagensAnimais.getOrDefault(normalizarNome(nomeAnimal), criarIconePlaceholder(nomeAnimal));
+    }
+
+    // Retorna dezenas do grupo (automático)
+    public String getDezenas(int grupo) {
+        int inicio = (grupo - 1) * 4 + 1;
+        int fim = inicio + 3;
+        return String.format("%02d a %02d", inicio, fim);
     }
 }
