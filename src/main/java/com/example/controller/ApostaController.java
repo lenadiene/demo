@@ -1,8 +1,10 @@
 package com.example.controller;
+
 import com.example.model.Aposta;
 import com.example.model.ApostaFactory;
 import com.example.model.Sorteio;
 import com.example.observer.SorteioObservable;
+
 public class ApostaController {
     private SorteioObservable sorteioObservable;
     

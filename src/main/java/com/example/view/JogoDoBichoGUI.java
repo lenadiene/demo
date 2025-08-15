@@ -158,7 +158,7 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
                 double valor = Double.parseDouble(valorStr);
                 Aposta aposta = apostaController.criarAposta(tipo, numero, valor, cpf);
                 apostaRepository.salvar(aposta);
-                listaApostasModel.addElement(aposta.toString());
+                sorteio.addAposta(aposta);
 
                 // Atualiza imagem da aposta
                 ImageIcon img = animalRepository.getImagem(numero);
@@ -303,6 +303,14 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
         vencedoresTextArea.setText(texto);
         String msg = houveVencedor ? "Parabéns! Uma das apostas foi vencedora!" : "Nenhuma aposta foi vencedora.";
         JOptionPane.showMessageDialog(this, msg, "Resultado", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    @Override
+    public void novaAposta(Aposta aposta) {
+        listaApostasModel.addElement(aposta.toString());
+
+        ImageIcon img = animalRepository.getImagem(aposta.getNumeroAposta());
+        imagemApostaLabel.setIcon(img);
     }
 
     public static void main(String[] args) {
