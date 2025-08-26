@@ -3,6 +3,7 @@ import com.example.strategy.CalculoPremio;
 import com.example.strategy.PremioDezena;
 import com.example.strategy.PremioGrupo;
 import com.example.strategy.PremioMilhar;
+//Cria instâncias de Aposta com a estratégia correta baseada no tipo de aposta
 public class ApostaFactory {
     public static Aposta criarAposta(String tipo, String numeroAposta, double valor, String cpfApostador) {
         CalculoPremio estrategia = null;

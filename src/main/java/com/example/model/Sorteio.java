@@ -1,7 +1,9 @@
 package com.example.model;
-
+//Contém uma lista de objetos Animal.
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.repository.ApostaRepository;
 
 public class Sorteio {
     private static final List<Animal> ANIMAIS = new ArrayList<>();
@@ -34,19 +36,25 @@ public class Sorteio {
         ANIMAIS.add(new Animal("Veado", 93, 96));
         ANIMAIS.add(new Animal("Vaca", 97, 100));
     }
+//Quando um sorteio é realizado um número milhar é gerado aleatoriamente entre 0 e 9999
+    // NO Sorteio.java
+public static Resultado realizarSorteio(ApostaRepository apostaRepository) {
+    // Usa o repositório passado (que já tem as apostas)
+    List<Aposta> todasApostas = apostaRepository.listar();
+    
+    // Gera número sorteado
+    int milhar = (int) (Math.random() * 10000);
+    int dezena = milhar % 100;
+    if (dezena == 0) dezena = 100;
 
-    public static Resultado realizarSorteio() {
-    int milhar = (int) (Math.random() * 10000); // 0000 a 9999
-    int dezena = milhar % 100; // pega os dois últimos dígitos
-    if (dezena == 0) dezena = 100; // trata o caso 00 como 100 (Grupo 25)
-
+    // Determina animal e prêmio
     String animal = determinarAnimal(dezena);
-    double premio = 10000 + (Math.random() * 90000); // Prêmio entre 10k e 100k
+    double premio = 10000 + (Math.random() * 90000);
 
-    return new Resultado(milhar, animal, premio); // Agora milhar é o número do sorteio
+    return new Resultado(milhar, animal, premio, todasApostas);
 }
 
-
+//O número da dezena é comparado com os intervalos de cada Animal
     private static String determinarAnimal(int numero) {
         if (numero == 0) numero = 100; // Tratamento especial para o 00
         

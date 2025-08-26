@@ -1,23 +1,42 @@
 package com.example.view;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.util.List;
+import java.util.Objects;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
 import com.example.controller.ApostaController;
 import com.example.model.Aposta;
 import com.example.model.Resultado;
 import com.example.observer.ApostadorObserver;
 import com.example.observer.SorteioObservable;
-import com.example.repository.ApostaRepository;
 import com.example.repository.AnimalRepository;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.List;
-import java.util.Objects;
+import com.example.repository.ApostaRepository;
 
 public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
 
-    private SorteioObservable sorteio;
     private ApostaController apostaController;
-    private ApostaRepository apostaRepository;
     private AnimalRepository animalRepository;
 
     private JLabel resultadoLabel;
@@ -27,19 +46,19 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
     private JList<String> listaApostas;
     private JTextArea vencedoresTextArea;
 
-    public JogoDoBichoGUI() {
+    public JogoDoBichoGUI(ApostaController apostaController, AnimalRepository animalRepository) {
         super("Jogo do Bicho");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1100, 800);
         setLayout(new BorderLayout(10, 10));
         getContentPane().setBackground(Color.WHITE);
 
-        sorteio = new SorteioObservable();
-        sorteio.addObserver(this);
-        apostaController = new ApostaController(sorteio);
+        this.apostaController = apostaController;
+        this.animalRepository = animalRepository;
 
-        apostaRepository = new ApostaRepository();
-        animalRepository = new AnimalRepository();
+        // Registra GUI como Observer
+        SorteioObservable sorteio = apostaController.getSorteioObservable();
+        sorteio.addObserver(this);
 
         initUI();
     }
@@ -156,13 +175,9 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
                 }
 
                 double valor = Double.parseDouble(valorStr);
-                Aposta aposta = apostaController.criarAposta(tipo, numero, valor, cpf);
-                apostaRepository.salvar(aposta);
-                sorteio.addAposta(aposta);
 
-                // Atualiza imagem da aposta
-                ImageIcon img = animalRepository.getImagem(numero);
-                imagemApostaLabel.setIcon(img);
+                // **Chama o Controller para criar e registrar aposta**
+                apostaController.criarERegistrarAposta(tipo, numero, valor, cpf);
 
             } catch (NumberFormatException nfe) {
                 JOptionPane.showMessageDialog(this, "Digite um número válido para o tipo selecionado.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -172,7 +187,6 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
         });
 
         limparButton.addActionListener(e -> {
-            apostaRepository.limpar();
             listaApostasModel.clear();
         });
 
@@ -218,104 +232,93 @@ public class JogoDoBichoGUI extends JFrame implements ApostadorObserver {
     }
 
     private JPanel criarPainelSorteio() {
-        JPanel painel = new JPanel(new BorderLayout(10, 10));
-        painel.setBackground(Color.WHITE);
+    JPanel painel = new JPanel(new BorderLayout(10, 10));
+    painel.setBackground(Color.WHITE);
 
-        JPanel resultadoPanel = new JPanel(new BorderLayout());
-        resultadoPanel.setBorder(BorderFactory.createTitledBorder("Resultado"));
-        resultadoPanel.setBackground(Color.WHITE);
-        resultadoLabel = new JLabel("Aguardando sorteio...", JLabel.CENTER);
-        resultadoLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        resultadoPanel.add(resultadoLabel, BorderLayout.NORTH);
+    JPanel resultadoPanel = new JPanel(new BorderLayout());
+    resultadoPanel.setBorder(BorderFactory.createTitledBorder("Resultado"));
+    resultadoPanel.setBackground(Color.WHITE);
+    resultadoLabel = new JLabel("Aguardando sorteio...", JLabel.CENTER);
+    resultadoLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+    resultadoPanel.add(resultadoLabel, BorderLayout.NORTH);
 
-        imagemResultadoLabel = new JLabel();
-        imagemResultadoLabel.setHorizontalAlignment(JLabel.CENTER);
-        resultadoPanel.add(imagemResultadoLabel, BorderLayout.CENTER);
+    imagemResultadoLabel = new JLabel();
+    imagemResultadoLabel.setHorizontalAlignment(JLabel.CENTER);
+    resultadoPanel.add(imagemResultadoLabel, BorderLayout.CENTER);
 
-        JButton sortearButton = new JButton("Realizar Sorteio");
-        sortearButton.addActionListener(e -> apostaController.realizarSorteio());
+    // Painel para os botões de sorteio
+    JPanel sortearPanel = new JPanel(new FlowLayout());
+    sortearPanel.setBackground(Color.WHITE);
+    
+    // Botão de sorteio normal
+    JButton sortearButton = new JButton("Realizar Sorteio Aleatório");
+    sortearButton.addActionListener(e -> apostaController.realizarSorteio());
+    
+    
+    
+    sortearPanel.add(sortearButton);
 
-        JPanel sortearPanel = new JPanel(new FlowLayout());
-        sortearPanel.setBackground(Color.WHITE);
-        sortearPanel.add(sortearButton);
+    vencedoresTextArea = new JTextArea();
+    vencedoresTextArea.setEditable(false);
+    vencedoresTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+    vencedoresTextArea.setBorder(BorderFactory.createTitledBorder("Apostas Vencedoras"));
+    JScrollPane scroll = new JScrollPane(vencedoresTextArea);
 
-        vencedoresTextArea = new JTextArea();
-        vencedoresTextArea.setEditable(false);
-        vencedoresTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        vencedoresTextArea.setBorder(BorderFactory.createTitledBorder("Apostas Vencedoras"));
-        JScrollPane scroll = new JScrollPane(vencedoresTextArea);
+    painel.add(resultadoPanel, BorderLayout.CENTER);
+    painel.add(sortearPanel, BorderLayout.NORTH);
+    painel.add(scroll, BorderLayout.EAST);
 
-        painel.add(resultadoPanel, BorderLayout.CENTER);
-        painel.add(sortearPanel, BorderLayout.NORTH);
-        painel.add(scroll, BorderLayout.EAST);
-
-        return painel;
-    }
+    return painel;
+}
 
     @Override
-    public void update(Resultado resultado) {
-        StringBuilder vencedores = new StringBuilder();
-        boolean houveVencedor = false;
-        double totalPremios = 0.0;
+public void update(Resultado resultado) {
+    // Exibe o resultado
+    resultadoLabel.setText(String.format(
+            "<html><center>Resultado:<br>Milhar: %04d<br>Animal: %s<br>Prêmio total: R$%.2f</center></html>",
+            resultado.getNumeroSorteado(),
+            resultado.getAnimal(),
+            resultado.getPremioTotal()  // ← Correto!
+    ));
+    imagemResultadoLabel.setIcon(animalRepository.getImagem(resultado.getAnimal()));
 
-        for (Aposta aposta : apostaRepository.listar()) {
-            String tipo = aposta.getTipoAposta();
-            String valorApostado = aposta.getNumeroAposta().trim().toLowerCase();
-            boolean venceu = false;
-
-            try {
-                switch (tipo.toLowerCase()) {
-                    case "milhar" -> venceu = Integer.parseInt(valorApostado) == resultado.getMilhar();
-                    case "dezena" -> venceu = Integer.parseInt(valorApostado) == resultado.getDezena();
-                    case "grupo" -> {
-                        int grupoResultado = (resultado.getDezena() == 100) ? 25 : ((resultado.getDezena() - 1) / 4 + 1);
-                        Integer grupoAposta = null;
-                        try {
-                            grupoAposta = Integer.parseInt(valorApostado);
-                        } catch (NumberFormatException e) {
-                            grupoAposta = animalRepository.getGrupo(valorApostado);
-                        }
-                        venceu = grupoAposta != null && grupoAposta == grupoResultado;
-                    }
-                }
-            } catch (Exception e) {
-                venceu = false;
-            }
-
-            if (venceu) {
-                houveVencedor = true;
-                vencedores.append(aposta.toString()).append("\n");
-                totalPremios += aposta.calcularPremio();
-            }
+    List<Aposta> ganhadoras = resultado.getGanhadoras(); // ← PERFEITO!
+    if (ganhadoras.isEmpty()) {
+        vencedoresTextArea.setText("Nenhuma aposta vencedora.");
+        JOptionPane.showMessageDialog(this, "Nenhuma aposta foi vencedora.", "Resultado", JOptionPane.INFORMATION_MESSAGE);
+    } else {
+        StringBuilder sb = new StringBuilder();
+        for (Aposta a : ganhadoras) {
+            sb.append(a.toString()).append("\n");
         }
-
-        resultadoLabel.setText(String.format(
-                "<html><center>Resultado:<br>Milhar: %s<br>Dezena: %s<br>Animal: %s<br>Prêmio: R$%.2f</center></html>",
-                resultado.getMilharFormatado(),
-                resultado.getDezenaFormatada(),
-                resultado.getAnimal(),
-                totalPremios
-        ));
-        resultadoLabel.setIcon(null);
-        imagemResultadoLabel.setIcon(animalRepository.getImagem(resultado.getAnimal()));
-
-        String texto = houveVencedor ? vencedores + "\nTOTAL DE PRÊMIOS PAGOS: R$" + totalPremios : "Nenhuma aposta vencedora.";
-        vencedoresTextArea.setText(texto);
-        String msg = houveVencedor ? "Parabéns! Uma das apostas foi vencedora!" : "Nenhuma aposta foi vencedora.";
-        JOptionPane.showMessageDialog(this, msg, "Resultado", JOptionPane.INFORMATION_MESSAGE);
+        sb.append("\nTOTAL DE PRÊMIOS PAGOS: R$").append(resultado.getPremioTotal()); // ← Correto!
+        vencedoresTextArea.setText(sb.toString());
+        JOptionPane.showMessageDialog(this, "Parabéns! Algumas apostas foram vencedoras!", "Resultado", JOptionPane.INFORMATION_MESSAGE);
     }
+}
 
     @Override
     public void novaAposta(Aposta aposta) {
         listaApostasModel.addElement(aposta.toString());
-
         ImageIcon img = animalRepository.getImagem(aposta.getNumeroAposta());
         imagemApostaLabel.setIcon(img);
     }
 
+    
+
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JogoDoBichoGUI gui = new JogoDoBichoGUI();
+            // Cria repositórios
+            ApostaRepository apostaRepository = new ApostaRepository();
+            AnimalRepository animalRepository = new AnimalRepository();
+
+            // Cria Observable e Controller
+            SorteioObservable sorteioObservable = new SorteioObservable();
+            ApostaController apostaController = new ApostaController(sorteioObservable, apostaRepository);
+
+            // Cria e exibe a GUI passando os objetos
+            JogoDoBichoGUI gui = new JogoDoBichoGUI(apostaController, animalRepository);
             gui.setVisible(true);
         });
     }
