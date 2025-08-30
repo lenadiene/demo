@@ -28,6 +28,7 @@ import javax.swing.SwingUtilities;
 
 import com.example.controller.ApostaController;
 import com.example.model.Aposta;
+import com.example.model.GerenciadorFactories;
 import com.example.model.Resultado;
 import com.example.observer.ApostadorObserver;
 import com.example.observer.SorteioObservable;
@@ -304,7 +305,7 @@ public void update(Resultado resultado) {
         imagemApostaLabel.setIcon(img);
     }
 
-    
+
 
 
     public static void main(String[] args) {
@@ -313,11 +314,20 @@ public void update(Resultado resultado) {
             ApostaRepository apostaRepository = new ApostaRepository();
             AnimalRepository animalRepository = new AnimalRepository();
 
-            // Cria Observable e Controller
+            // Cria Observable
             SorteioObservable sorteioObservable = new SorteioObservable();
-            ApostaController apostaController = new ApostaController(sorteioObservable, apostaRepository);
 
-            // Cria e exibe a GUI passando os objetos
+            // Cria GerenciadorFactories
+            GerenciadorFactories gerenciadorFactories = new GerenciadorFactories();
+
+            // Cria Controller injetando dependências
+            ApostaController apostaController = new ApostaController(
+                    sorteioObservable,
+                    apostaRepository,
+                    gerenciadorFactories
+            );
+
+            // Cria e exibe a GUI passando o controller e o animalRepository
             JogoDoBichoGUI gui = new JogoDoBichoGUI(apostaController, animalRepository);
             gui.setVisible(true);
         });

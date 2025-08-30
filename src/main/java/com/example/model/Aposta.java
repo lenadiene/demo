@@ -8,7 +8,8 @@ public class Aposta {
     private double valor;
     private CalculoPremio estrategiaPremio;
     private String tipoAposta;
-private String cpfApostador;
+    private String cpfApostador;
+
     public Aposta(String numeroAposta, double valor, CalculoPremio estrategiaPremio, String tipoAposta, String cpfApostador) {
         this.numeroAposta = numeroAposta;
         this.valor = valor;
@@ -21,7 +22,6 @@ private String cpfApostador;
         return estrategiaPremio.calcularPremio(valor);
     }
 
-    // Getters
     public String getNumeroAposta() {
         return numeroAposta;
     }
@@ -33,11 +33,36 @@ private String cpfApostador;
     public String getTipoAposta() {
         return tipoAposta;
     }
-    public String getCpfApostador() {
-    return cpfApostador;
-}
 
-        @Override
+    public String getCpfApostador() {
+        return cpfApostador;
+    }
+
+    public void setNumeroAposta(String numeroAposta) {
+        this.numeroAposta = numeroAposta;
+    }
+
+    public void setValor(double valor) {
+        this.valor = valor;
+    }
+
+    public CalculoPremio getEstrategiaPremio() {
+        return estrategiaPremio;
+    }
+
+    public void setEstrategiaPremio(CalculoPremio estrategiaPremio) {
+        this.estrategiaPremio = estrategiaPremio;
+    }
+
+    public void setTipoAposta(String tipoAposta) {
+        this.tipoAposta = tipoAposta;
+    }
+
+    public void setCpfApostador(String cpfApostador) {
+        this.cpfApostador = cpfApostador;
+    }
+
+    @Override
     public String toString() {
         double premio = estrategiaPremio.calcularPremio(valor);
         return "CPF: " + cpfApostador +

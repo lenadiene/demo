@@ -4,13 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="668dcc36-44d9-4e38-9227-6708742819ba" name="Changes" comment="Separação das responsabilidades da UI em repositorios especificos de apostas e e animais">
+    <list default="true" id="668dcc36-44d9-4e38-9227-6708742819ba" name="Changes" comment="Observer agora verifica quando uma aposta ocorre">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/controller/ApostaController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/controller/ApostaController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/observer/ApostadorObserver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/observer/ApostadorObserver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/observer/SorteioObservable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/observer/SorteioObservable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/model/Aposta.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/model/Aposta.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/model/ApostaFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/model/ApostaFactory.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/view/JogoDoBichoGUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/view/JogoDoBichoGUI.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/controller/ApostaController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/controller/ApostaController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/model/ApostaFactory.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/model/ApostaFactory.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/model/Resultado.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/model/Resultado.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/model/Sorteio.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/model/Sorteio.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/observer/SorteioObservable.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/observer/SorteioObservable.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/repository/ApostaRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/repository/ApostaRepository.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/view/JogoDoBichoGUI.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/view/JogoDoBichoGUI.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -56,21 +61,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.JogoDoBichoGUI.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.JogoDoBichoGUI.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="JogoDoBichoGUI" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.example.view.JogoDoBichoGUI" />
@@ -110,7 +116,10 @@
       <updated>1754432248477</updated>
       <workItem from="1754432249729" duration="4635000" />
       <workItem from="1754438541203" duration="673000" />
-      <workItem from="1755280318225" duration="6352000" />
+      <workItem from="1755280318225" duration="6641000" />
+      <workItem from="1755867431390" duration="1412000" />
+      <workItem from="1756159270451" duration="1284000" />
+      <workItem from="1756564041517" duration="2668000" />
     </task>
     <task id="LOCAL-00001" summary="mudanças na ui">
       <option name="closed" value="true" />
@@ -136,7 +145,15 @@
       <option name="project" value="LOCAL" />
       <updated>1755285730842</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Observer agora verifica quando uma aposta ocorre">
+      <option name="closed" value="true" />
+      <created>1755287422162</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1755287422162</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -157,6 +174,7 @@
     <MESSAGE value="mudanças na ui" />
     <MESSAGE value="Repositorio para animal" />
     <MESSAGE value="Separação das responsabilidades da UI em repositorios especificos de apostas e e animais" />
-    <option name="LAST_COMMIT_MESSAGE" value="Separação das responsabilidades da UI em repositorios especificos de apostas e e animais" />
+    <MESSAGE value="Observer agora verifica quando uma aposta ocorre" />
+    <option name="LAST_COMMIT_MESSAGE" value="Observer agora verifica quando uma aposta ocorre" />
   </component>
 </project>
